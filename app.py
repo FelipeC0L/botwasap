@@ -1,25 +1,28 @@
 from flask import Flask, request
+import os
 
 app = Flask(__name__)
+VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN")
 
-VERIFY_TOKEN = "mi_token_secreto_123"
+@app.route("/", methods=["GET"])
+def home():
+    return "Bot vivo", 200
 
-@app.route("/webhook", methods=["GET"])
-def verify():
-    # Meta manda esto para verificar
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
-    
-    if token == VERIFY_TOKEN:
-        return challenge, 200
-    return "Token incorrecto", 403
-
-@app.route("/webhook", methods=["POST"])
+@app.route("/webhook", methods=["GET", "POST"])
 def webhook():
-    # Aquí te llegarán los mensajes de WhatsApp
-    data = request.get_json()
-    print(data)  # Para ver los mensajes en los logs de Render
-    return "ok", 200
+    print("ALGO LLEGO AL WEBHOOK") # Para saber si llega algo
+    if request.method == "GET":
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
+        print(f"GET con token: {token}")
+        if token == VERIFY_TOKEN:
+            return challenge
+        return "Token invalido", 403
+    
+    if request.method == "POST":
+        data = request.get_json()
+        print(f"POST DATA: {data}") # Aquí debe salir el mensaje
+        return "ok", 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
