@@ -1,6 +1,6 @@
 from flask import Flask, request
 
-app = Flask(*name*)
+app = Flask(__name__)
 
 VERIFY_TOKEN = "mi_token_secreto_123"
 
